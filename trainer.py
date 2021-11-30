@@ -105,7 +105,7 @@ def train_epoch(cfg,epoch,loader,logger,writer,Disc_Thr,optim_rgb,optim_focal,op
                 if batch_idx % cfg.SYSTEM.LOG_FREQ == 0:
                     print('train loss:',loss_all.item(),'loss_crossentropy:',loss.item(),'loss_d:',loss_d.item(),'loss_l:',loss_l.item(),'epoch:',epoch,'num:',batch_idx)
                     out_save = out[0][0].cpu().data
-                    imsave(os.path.join(cfg.VISUAL_ROOT, img_name[0] + '.png'), out_save, (256,256))
+                    imsave(os.path.join(cfg.VISUAL_ROOT, img_name[0] + '.png'), out_save, (h,w))
                 
                 torch.cuda.empty_cache()
             
