@@ -103,8 +103,8 @@ def update_M(forget):
     :param forget: numpy shape [2,256,256]
     :return: M1, M2  tensor shape [256,256]
     '''
-    M1 = 2/(1 + np.exp(cfg.SOLVER.K*(forget[0,:,:]**2)))
-    M2 = 2/(1 + np.exp(cfg.SOLVER.K*(forget[1,:,:]**2)))
+    M1 = 2/(1 + np.exp(cfg.SOLVER.A*(forget[0,:,:]**2)))
+    M2 = 2/(1 + np.exp(cfg.SOLVER.A*(forget[1,:,:]**2)))
     M1, M2 = torch.from_numpy(M1).float().to(device),torch.from_numpy(M2).float().to(device)
     return M1, M2
 
