@@ -1,6 +1,6 @@
 ## Learning from Pixel-Level Noisy Label : A New Perspective for Light Field Saliency Detection
 
-### This is a PyTorch implementation of our paper submission in CVPR 2022
+### This is a PyTorch implementation of our paper
 
 ## Overall
 
