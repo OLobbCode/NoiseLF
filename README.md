@@ -4,7 +4,7 @@
 
 ## Overall
 
-![avatar](https://github.com/OLobbCode/NoiseLF/blob/main/overall.png)
+![avatar](https://github.com/OLobbCode/NoiseLF/blob/code/overall.png)
 
 
 
@@ -56,17 +56,14 @@ For single dataset testing:  you should set  `c.PHASE='test'` in config.py, and 
 ```shell
 python demo.py 
 ```
-
 For evaluate :
 
 ```shell
 python evaluate.py
 ```
-
 All results saliency maps will be stored under `'Test/Out/exp_noiself_30/'` folders in .png formats.
 
 Note：
-
 1. only support `bath_size=1`
 
 Thanks to [MOLF](https://github.com/jiwei0921/MoLF).
