@@ -38,14 +38,13 @@ c.DATA = CN()
 c.DATA.TRAIN = CN()
 c.DATA.TEST = CN()
 c.DATA.VAL = CN()
-c.DATA.TRAIN.LIST = '../parameters/train7000.txt'
+c.DATA.TRAIN.LIST = '../parameters/train.txt'
 c.DATA.TRAIN.ROOT =  '../Light-Field_dataset/train_data' 
-c.DATA.TRAIN.NOISE_ROOT = ['../train_data/noisy/RBD']#['../train_data/noisy/DSR']
-c.DATA.TRAIN.NOISE_ADD = ('../train_data/noisy/03_rgbd')
-c.DATA.VAL.LIST = '../parameters/train10.txt'
+c.DATA.TRAIN.NOISE_ROOT = ['../train_data/noisy/RBD']  #['../train_data/noisy/DSR']
+c.DATA.VAL.LIST = '../parameters/val.txt'
 c.DATA.VAL.ROOT = '../Light-Field_dataset/train_data'
-c.DATA.TEST.LIST = '../parameters/train7000.txt'
-c.DATA.TEST.ROOT = '../Light-Field_dataset/train_data'
+c.DATA.TEST.LIST = '../parameters/test.txt'
+c.DATA.TEST.ROOT = '../Light-Field_dataset/test_data'
 
 
 
