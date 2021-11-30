@@ -2,10 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.misc import imresize
 import torch.nn as nn
-from configg import cfg
+from config import cfg
 import torch
 import torch.nn.functional as F
 import os
+from utils.math_utils import max2d, min2d
 
 # Global Definition
 device = cfg.SYSTEM.DEVICE if torch.cuda.is_available() else 'cpu'
@@ -39,7 +40,6 @@ def Check_point(epoch,iteration,model_rgb, model_focal, model_clstm, model_inter
 
 
 
-
 def BCE(output, target):
     # output [b,2,h,w]  target [b,1,h,w]
     loss = 0
@@ -47,6 +47,7 @@ def BCE(output, target):
         loss +=  criterion(output, target)
     loss /= cfg.SOLVER.NUM_MAPS 
     return loss
+
 
 
 def sigmoid(pred):
@@ -57,6 +58,7 @@ def sigmoid(pred):
     pred = pred[:, 1, :, :]
     pred = pred[np.newaxis, ...]
     return pred
+
 
 
 def update_acc(acc,out1,out2,y,delta):
@@ -79,6 +81,7 @@ def update_acc(acc,out1,out2,y,delta):
     return acc
 
 
+
 def update_forget(acc,forget):
     '''
     update forget matrix by acc
@@ -93,6 +96,7 @@ def update_forget(acc,forget):
     return forget
 
 
+
 def update_M(forget):
     '''
     convert forget matrix to confidence matrix M
@@ -105,13 +109,37 @@ def update_M(forget):
     return M1, M2
 
 
+def correlation_samples(loader,model):
+    model_rgb, model_focal, model_clstm, model_intergration = model
+    peer_iter = iter(loader)
+    x1 = peer_iter.next()['image'].to(device)
+    fo1 = peer_iter.next()['focal'].to(device)
+    y_noise1 = peer_iter.next()['noisy_label'].to(device)
+    y_n_min, y_n_max = min2d(y_noise1), max2d(y_noise1)
+    y_noise1 = (y_noise1 - y_n_min) / (y_n_max - y_n_min)
+    #y_noise1 = discretize_pseudolabels(y_noise1, Disc_Thr)
+
+    basize, dime, height, width = fo1.size()  
+    fo1 = fo1.view(1, basize, dime, height, width).transpose(0, 1)  
+    fo1 = torch.cat(torch.chunk(fo1, 12, dim=2), dim=1)  
+    fo1 = torch.cat(torch.chunk(fo1, basize, dim=0), dim=1).squeeze()  
+    f1,f2,f3,f4,f5 = model_focal(fo1)
+    r1,r2,r3,r4,r5 = model_rgb(x1)
+
+    outf1, _, _, outr1, _, _ = model_clstm(r1, r2, r3, r4, r5, f1, f2, f3, f4, f5) 
+                    
+    out1 = model_intergration(outf1,outr1)
+    out1 = sigmoid(out1).float()
+    return out1
+
+
 # The weight of peer term
 def f_alpha(epoch):
-    # Uniform/Random noise setting
-   
-    alpha = np.linspace(0.0, 0.3, num=30)
+    
+    alpha = np.linspace(0.0, cfg.SOLVER.ALPHA, num=30)
     
     return alpha[epoch]
+
 
 
 def imsave(file_name, img, img_size):
@@ -125,8 +153,11 @@ def imsave(file_name, img, img_size):
            'img must be a torch.FloatTensor')
     plt.imsave(file_name, img, cmap='gray')  
 
+
+
 def Discretize(In, a):
     return (In>a)
+
 
 
 def ThresholdPrediction(pred, target, Disc_Thr):
@@ -139,10 +170,14 @@ def ThresholdPrediction(pred, target, Disc_Thr):
     Z=a1*(pred>target).int()*t_up + a0*(pred<target).int()*t_low-1
     return (Z==-1).float()*pred + Z.float().clamp(0,1)
 
+
+
 def discretize_pseudolabels( pseudolabels, Disc_Thr):   
     for dummy_ind in range(len(pseudolabels[0])):
             pseudolabels[0][dummy_ind] = Discretize(pseudolabels[0][dummy_ind], Disc_Thr).float()
     return pseudolabels #[b,h,w] [b,num,h,w]
+
+
 
 def discretize_depthlab(depthlab, Disc_Thr):
 
@@ -150,8 +185,25 @@ def discretize_depthlab(depthlab, Disc_Thr):
     return depthlab #[b,h,w] [b,num,h,w]
 
 
-#omitted code
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#omitted code
 def cross_entropy2d(input, target, weight=None, size_average=True):
     n, c, h, w = input.size()
     input = input.transpose(1,2).transpose(2,3).contiguous()
