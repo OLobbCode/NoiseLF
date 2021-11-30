@@ -161,7 +161,7 @@ def get_loader(config, target_dirs,mode, pin=False):
         data_loader = data.DataLoader(dataset=dataset, batch_size=config.SOLVER.BATCH_SIZE,
                                       shuffle=shuffle, num_workers=config.SYSTEM.NUM_WORKERS,
                                       pin_memory=pin, drop_last=True)
-    if mode == 'peer':
+    if mode == 'cross scene':
         shuffle = True
         dataset = MyData(config.DATA.TRAIN.ROOT, config.DATA.TRAIN.LIST, target_dirs,transforms.Compose(t))
         data_loader = data.DataLoader(dataset=dataset, batch_size=config.SOLVER.BATCH_SIZE,
