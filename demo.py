@@ -62,7 +62,7 @@ def main():
             test_loader = get_loader(cfg,'', 'test')
 
             num_iterations_refinement = len(cfg.SOLVER.LR)
-            discretization_threshold = 0.23
+            discretization_threshold = cfg.SOLVER.DISC
             weight_decay = cfg.SOLVER.WEIGHT_DECAY
             betas = cfg.SOLVER.BETAS
 
