@@ -8,7 +8,7 @@ import scipy.io as sio
 
 def train_epoch(cfg,epoch,loader,logger,writer,Disc_Thr,optim_rgb,optim_focal,optim_clstm,optim_intergration,model_rgb, model_focal, model_clstm, model_intergration):
     
-        train_loader, peer_loader= loader
+        train_loader, correlate_loader1, correlate_loader2, correlate_loader3= loader
         h, w = cfg.SOLVER.IMG_SIZE[0], cfg.SOLVER.IMG_SIZE[1]
         device = cfg.SYSTEM.DEVICE if torch.cuda.is_available() else 'cpu'
         
@@ -45,11 +45,11 @@ def train_epoch(cfg,epoch,loader,logger,writer,Disc_Thr,optim_rgb,optim_focal,op
                 outf, _, dfeature_map, outr, _, lfeature_map = model_clstm(r1, r2, r3, r4, r5, f1, f2, f3, f4, f5) 
                 
                 # read trans_acc,update transform matrix
-                Acc_file = os.path.join(cfg.DATA.TRAIN.ROOT,'Acc_data/Acc_7',img_name[0] + '.mat')
-                Forget_file = os.path.join(cfg.DATA.TRAIN.ROOT,'Forget_data/Forget_7',img_name[0] + '.mat')
+                Acc_file = os.path.join(cfg.DATA.TRAIN.ROOT,'Acc_data/Acc_dir',img_name[0] + '.mat')
+                Forget_file = os.path.join(cfg.DATA.TRAIN.ROOT,'Forget_data/Forget_dir',img_name[0] + '.mat')
                 trans = sio.loadmat(Acc_file)
                 trans = trans['acc']
-                trans = update_acc(trans,sigmoid(outf), sigmoid(outr), y_noise,cfg.SOLVER.DELTA)
+                trans = update_acc(trans,sigmoid(outf), sigmoid(outr), y_noise, cfg.SOLVER.DELTA)
                 sio.savemat(Acc_file, {'trans':trans})
 
                 # compute forget matrix,save mat 
@@ -65,30 +65,12 @@ def train_epoch(cfg,epoch,loader,logger,writer,Disc_Thr,optim_rgb,optim_focal,op
 
                 
                 if f_alpha(epoch) != 0:
-            
-                    peer_iter = iter(peer_loader)
-                    x1 = peer_iter.next()['image'].to(device)
-                    fo1 = peer_iter.next()['focal'].to(device)
-                    y_noise1 = peer_iter.next()['noisy_label'].to(device)
-                    y_n_min, y_n_max = min2d(y_noise1), max2d(y_noise1)
-                    y_noise1 = (y_noise1 - y_n_min) / (y_n_max - y_n_min)
-                    y_noise1 = discretize_pseudolabels(y_noise1, Disc_Thr)
-
-                    basize, dime, height, width = fo1.size()  
-                    fo1 = fo1.view(1, basize, dime, height, width).transpose(0, 1)  
-                    fo1 = torch.cat(torch.chunk(fo1, 12, dim=2), dim=1)  
-                    fo1 = torch.cat(torch.chunk(fo1, basize, dim=0), dim=1).squeeze()  
-                    f1,f2,f3,f4,f5 = model_focal(fo1)
-                    r1,r2,r3,r4,r5 = model_rgb(x1)
-
-                    outf1, _, _, outr1, _, _ = model_clstm(r1, r2, r3, r4, r5, f1, f2, f3, f4, f5) 
+                    model = [model_rgb, model_focal, model_clstm, model_intergration]
+                    out1 = correlation_samples(correlate_loader1,model)
+                    out2 = correlation_samples(correlate_loader2,model)
+                    out3 = correlation_samples(correlate_loader3,model)
                     
-                    out1 = model_intergration(outf1,outr1)
-                    out1 = sigmoid(out1).float()
-                    
-                    
-                    #loss = cross_entropy2d(out, y_noise, weight=None, size_average=False) - f_alpha(epoch) * cross_entropy2d(out1, y_noise1, weight=None, size_average=False)
-                    loss = BCE(out, y_noise) - f_alpha(epoch) * BCE(out1, y_noise)
+                    loss = BCE(out, y_noise) - (f_alpha(epoch)/3) * (BCE(out1, y_noise) + BCE(out1, y_noise) + BCE(out1, y_noise))
                     loss_d = F.smooth_l1_loss(dfeature_map, d, size_average = False)
                     loss_l = F.smooth_l1_loss(lfeature_map, l, size_average = False)
                     #loss_d_high = F.smooth_l1_loss(dfeature_high_map, d, size_average = False)
