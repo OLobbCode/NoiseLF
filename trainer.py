@@ -142,10 +142,7 @@ def test(cfg, model, loader):
         count = 0
         if not os.path.exists(cfg.MAP_ROOT):
             os.system('mkdir -p %s'%(cfg.MAP_ROOT))
-        if not os.path.exists(cfg.MAP_ROOT_f):
-                os.system('mkdir -p %s'%(cfg.MAP_ROOT_f))
-        if not os.path.exists(cfg.MAP_ROOT_r):
-                os.system('mkdir -p %s'%(cfg.MAP_ROOT_r))
+            
 
         for batch_idx, data in enumerate(loader):
             torch.cuda.empty_cache()
