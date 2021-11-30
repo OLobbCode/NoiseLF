@@ -54,8 +54,10 @@ def main():
 
 
             train_loader = get_loader(cfg, cfg.DATA.TRAIN.NOISE_ROOT,'train')
-            peer_loader = get_loader(cfg, cfg.DATA.TRAIN.NOISE_ROOT,'peer')
-            peer_loaders = [train_loader, peer_loader]# both shuffled 
+            correlate_loader1 = get_loader(cfg, cfg.DATA.TRAIN.NOISE_ROOT,'cross scene')
+            correlate_loader2 = get_loader(cfg, cfg.DATA.TRAIN.NOISE_ROOT,'cross scene')
+            correlate_loader3 = get_loader(cfg, cfg.DATA.TRAIN.NOISE_ROOT,'cross scene')
+            correlate_loaders = [train_loader, correlate_loader1, correlate_loader2, correlate_loader3]# both shuffled 
 
             test_loader = get_loader(cfg,'', 'test')
 
@@ -76,7 +78,7 @@ def main():
                     optimizer_clstm = optim.Adam(model_clstm.parameters(), lr=lr, weight_decay=weight_decay, betas=betas)
                     optimizer_intergration = optim.Adam(model_intergration.parameters(), lr=lr, weight_decay=weight_decay, betas=betas)
                     optimizer = [optimizer_rgb, optimizer_focal, optimizer_clstm, optimizer_intergration]
-                    train_round(cfg,i,peer_loaders,optimizer,model,logger,writer,discretization_threshold)
+                    train_round(cfg,i,correlate_loaders,optimizer,model,logger,writer,discretization_threshold)
                     discretization_threshold = 0.5
 
                     
