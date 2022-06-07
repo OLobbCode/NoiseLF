@@ -50,7 +50,7 @@ def train_epoch(cfg,epoch,loader,logger,writer,Disc_Thr,optim_rgb,optim_focal,op
                 trans = sio.loadmat(Acc_file)
                 trans = trans['acc']
                 trans = update_acc(trans,sigmoid(outf), sigmoid(outr), y_noise, cfg.SOLVER.DELTA)
-                sio.savemat(Acc_file, {'trans':trans})
+                sio.savemat(Acc_file, {'acc':trans})
 
                 # compute forget matrix,save mat 
                 forget = sio.loadmat(Forget_file)
