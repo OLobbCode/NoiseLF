@@ -70,7 +70,7 @@ def train_epoch(cfg,epoch,loader,logger,writer,Disc_Thr,optim_rgb,optim_focal,op
                     out2 = correlation_samples(correlate_loader2,model)
                     out3 = correlation_samples(correlate_loader3,model)
                     
-                    loss = BCE(out, y_noise) - (f_alpha(epoch)/3) * (BCE(out1, y_noise) + BCE(out1, y_noise) + BCE(out1, y_noise))
+                    loss = BCE(out, y_noise) - (f_alpha(epoch)/3) * (BCE(out1, y_noise) + BCE(out2, y_noise) + BCE(out3, y_noise))
                     loss_d = F.smooth_l1_loss(dfeature_map, d, size_average = False)
                     loss_l = F.smooth_l1_loss(lfeature_map, l, size_average = False)
                     #loss_d_high = F.smooth_l1_loss(dfeature_high_map, d, size_average = False)
